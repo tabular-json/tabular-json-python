@@ -1,0 +1,52 @@
+from tabularjson.objects import Symbol
+
+leaf = Symbol("leaf")
+
+
+def collect_nested_paths(array: list) -> list[str | int]:
+    merged = {}
+
+    for item in array:
+        if type(item) is dict:
+            _merge_object(item, merged)
+        else:
+            _merge_value(item, merged)
+
+    paths = []
+    _collect_paths(merged, [], paths)
+
+    return paths
+
+
+def _merge_object(obj, merged):
+    for key, value in obj.items():
+        if key not in merged:
+            merged[key] = {}
+
+        value_merged = merged[key]
+
+        if type(value) is dict:
+            _merge_object(value, value_merged)
+        else:
+            _merge_value(value, value_merged)
+
+
+def _merge_value(value, merged):
+    if leaf not in merged:
+        merged[leaf] = False if value is None else True
+
+
+def _collect_paths(merged, parent_path, paths):
+    if merged.get(leaf) is True or (merged.get(leaf) is False and is_empty(merged)):
+        paths.append(parent_path)
+    elif type(merged) is list:
+        for index, item in enumerate(merged):
+            _collect_paths(item, parent_path + [index], paths)
+    elif type(merged) is dict:
+        for key, value in merged.items():
+            if key != leaf:
+                _collect_paths(value, parent_path + [key], paths)
+
+
+def is_empty(obj) -> bool:
+    return len(list(filter(lambda key: key != leaf, obj.keys()))) == 0

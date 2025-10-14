@@ -13,7 +13,7 @@ class StringifyTestCase(unittest.TestCase):
             path.dirname(path.realpath(__file__)) + "/test-suite/stringify.test.json"
         )
 
-        with open(test_suite_file, "r") as read_file:
+        with open(test_suite_file, "r", encoding="utf-8") as read_file:
             suite = json.load(read_file)
 
             for group in suite["groups"]:
@@ -30,22 +30,22 @@ class StringifyTestCase(unittest.TestCase):
                             match test["input_enum"]:
                                 case "negative_zero":
                                     self.assertEqual(
-                                        stringify(-0, group.options), test["output"]
+                                        stringify(-0, options), test["output"]
                                     )
                                 case "positive_infinity":
                                     self.assertEqual(
-                                        stringify(math.inf, group.options),
+                                        stringify(math.inf, options),
                                         test["output"],
                                     )
                                 case "negative_infinity":
                                     self.assertEqual(
-                                        stringify(-math.inf, group.options),
+                                        stringify(-math.inf, options),
                                         test["output"],
                                     )
                                 case "not_a_number":
                                     nan = math.inf - math.inf
                                     self.assertEqual(
-                                        stringify(nan, group.options), test["output"]
+                                        stringify(nan, options), test["output"]
                                     )
                                 case _:
                                     raise SyntaxError(
@@ -53,9 +53,6 @@ class StringifyTestCase(unittest.TestCase):
                                         + test["input_enum"]
                                         + '"'
                                     )
-                            self.assertEqual(
-                                stringify(test["input"], options), test["output"]
-                            )
                     else:
                         message = f"[{group['category']}] {group['description']} (input: {test['input']})"
                         with self.subTest(message=message):

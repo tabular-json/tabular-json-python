@@ -1,0 +1,25 @@
+import unittest
+
+from tabularjson.objects import get_in, undefined
+
+
+class ObjectsTestCase(unittest.TestCase):
+    def test_get_in(self):
+        self.assertEqual(get_in({"name": "Joe"}, ["name"]), "Joe")
+        self.assertEqual(get_in({"name": "Joe"}, ["foo"]), undefined)
+        self.assertEqual(get_in({"nested": {"name": "Joe"}}, ["nested", "name"]), "Joe")
+        self.assertEqual(
+            get_in({"nested": {"array": ["a", "b"]}}, ["nested", "array", "1"]), "b"
+        )
+        self.assertEqual(
+            get_in({"nested": {"array": ["a", "b"]}}, ["nested", "array", "99"]),
+            undefined,
+        )
+        self.assertEqual(
+            get_in({"nested": {"array": ["a", "b"]}}, ["nested", "foo", "bar"]),
+            undefined,
+        )
+        self.assertEqual(get_in({"nested": None}, ["nested", "foo", "bar"]), undefined)
+        self.assertEqual(get_in({}, ["nested", "foo", "bar"]), undefined)
+        self.assertEqual(get_in({"nested": 123}, ["nested", "foo", "bar"]), undefined)
+        self.assertEqual(get_in({"nested": True}, ["nested", "foo", "bar"]), undefined)
