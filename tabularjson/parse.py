@@ -322,6 +322,7 @@ def parse(text: str) -> Any:
         i += 1
 
         result: str = ""
+        has_unicode = False
         while i < len(text) and text_at(i) != '"':
             if text_at(i) == "\\":
                 char = text_at(i + 1)
@@ -338,6 +339,7 @@ def parse(text: str) -> Any:
                     ):
                         result += chr(int(text[i + 2 : i + 6], 16))
                         i += 5
+                        has_unicode = True
                     else:
                         raise_invalid_unicode_character(i)
                 else:
@@ -352,7 +354,7 @@ def parse(text: str) -> Any:
         expect_end_of_string()
         i += 1
 
-        return result
+        return result if not has_unicode else result.encode('utf-16', 'surrogatepass').decode('utf-16')
 
     def parse_string_or(raise_error):
         string = parse_string()
