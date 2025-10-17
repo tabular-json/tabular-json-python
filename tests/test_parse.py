@@ -10,7 +10,6 @@ from tabularjson import parse
 class ParseTestCase(unittest.TestCase):
     def test_suite(self):
         """Run the official parse test-suite"""
-        raise unittest.SkipTest("parse is not yet implemented")
 
         test_suite_file = (
             path.dirname(path.realpath(__file__)) + "/test-suite/parse.test.json"
@@ -26,7 +25,7 @@ class ParseTestCase(unittest.TestCase):
                     if "output" in test:
                         with self.subTest(message=message):
                             self.assertEqual(parse(test["input"]), test["output"])
-                    if "output_enum" in test:
+                    elif "output_enum" in test:
                         with self.subTest(message=message):
                             match test["output_enum"]:
                                 case "negative_zero":
