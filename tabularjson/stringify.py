@@ -1,14 +1,20 @@
 import json
 from math import isnan, inf
 from symtable import Function
-from typing import Optional, Any
+from typing import Any
 
-from tabularjson.tabular import collect_fields, is_tabular
 from tabularjson.objects import get_in
-from tabularjson.types import StringifyOptions
+from tabularjson.tabular import collect_fields, is_tabular
+from tabularjson.types import (
+    StringifyOptions,
+    Path,
+    TableFieldGetter,
+    Record,
+    GetValue,
+)
 
 
-def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
+def stringify(data: Any, options: StringifyOptions | None = None) -> str:
     """
     Stringify data into a string containing Tabular-JSON.
 
@@ -62,7 +68,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
             return stringify_primitive_value(value)
 
         # boolean, null, string
-        if value == True or value == False or value is None or type(value) is str:
+        if type(value) is bool or value is None or type(value) is str:
             return stringify_primitive_value(value)
 
         # table
@@ -79,7 +85,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
 
         raise TypeError("Unknown type of data: " + str(type(value)))
 
-    def stringify_array(array: list, indent: str, indentation: str | None):
+    def stringify_array(array: list[Any], indent: str, indentation: str | None):
         if len(array) == 0:
             return "[]"
 
@@ -90,10 +96,8 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
             if indentation:
                 text += child_indent
 
-            if type(item) is not None and type(item) != Function:
+            if type(item) is not Function:
                 text += stringify_value(item, child_indent, indentation)
-            else:
-                text += "null"
 
             if index < len(array) - 1:
                 text += ",\n" if indentation else ","
@@ -104,7 +108,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
 
         return text
 
-    def stringify_table(array: list, indent: str, indentation: str | None):
+    def stringify_table(array: list[Any], indent: str, indentation: str | None):
         is_root = array == data
         child_indent = (indent + indentation) if (indentation and indent) else indent
         col_separator = ", " if indentation else ","
@@ -113,7 +117,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
 
         text = "" if is_root else "---\n"
 
-        def stringify_cell(item, field):
+        def stringify_cell(item: Any, field: TableFieldGetter):
             value, exists = field["get_value"](item)
             return stringify_value(value, child_indent, None) if exists else ""
 
@@ -155,7 +159,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
 
         return "".join(cells)
 
-    def stringify_object(obj: dict, indent: str, indentation: str | None):
+    def stringify_object(obj: Record, indent: str, indentation: str | None):
         entries = obj.items()
 
         if len(entries) == 0:
@@ -182,7 +186,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
     return stringify_value(data, "", global_indentation)
 
 
-def get_fields(records: list[Any]):
+def get_fields(records: list[Any]) -> list[TableFieldGetter]:
     nested_paths = collect_fields(records)
 
     return list(
@@ -196,7 +200,7 @@ def get_fields(records: list[Any]):
     )
 
 
-def create_get_value(path):
+def create_get_value(path: Path) -> GetValue:
     if len(path) == 1:
         key = path[0]
         return lambda item: (item[key], True) if key in item else (None, False)
@@ -204,11 +208,11 @@ def create_get_value(path):
     return lambda item: get_in(item, path)
 
 
-def stringify_primitive_value(value: str) -> str:
+def stringify_primitive_value(value: str | int | float | bool | None) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
-def stringify_field(path):
+def stringify_field(path: Path):
     return ".".join(map(lambda key: stringify_primitive_value(key), path))
 
 

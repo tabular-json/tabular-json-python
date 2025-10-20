@@ -1,9 +1,9 @@
 from typing import Any
 
-from tabularjson.types import Path
+from tabularjson.types import Path, Record
 
 
-def get_in(obj, path) -> tuple[Any, bool]:
+def get_in(obj: Record, path: Path) -> tuple[Any, bool]:
     """
     Get a nested property from a nested object or array.
     Returns a tuple (value: Any, exists: bool).
@@ -15,7 +15,7 @@ def get_in(obj, path) -> tuple[Any, bool]:
         key = path[i]
 
         if type(value) is dict:
-            if key in value:
+            if type(key) is str and key in value:
                 value = value[key]
             else:
                 return None, False
@@ -34,7 +34,7 @@ def get_in(obj, path) -> tuple[Any, bool]:
     return value, True
 
 
-def set_in(obj, path: Path, value: Any):
+def set_in(obj: Record, path: Path, value: Any):
     nested = obj
     i_last = len(path) - 1
     i = 0
@@ -43,7 +43,7 @@ def set_in(obj, path: Path, value: Any):
         part = path[i]
 
         if part not in nested:
-            if type(path[i + 1]) == int:
+            if type(path[i + 1]) is int:
                 nested[part] = []
             else:
                 nested[part] = {}
@@ -51,16 +51,17 @@ def set_in(obj, path: Path, value: Any):
         nested = nested[part]
         i += 1
 
-    if type(path[i_last]) is int:
-        arr_assign(nested, path[i_last], value)
-    else:
+    key = path[i_last]
+    if type(key) is int:
+        arr_assign(nested, key, value)
+    elif type(key) is str:
         # dict
-        nested[path[i_last]] = value
+        nested[key] = value
 
     return obj
 
 
-def arr_assign(arr, key, val):
+def arr_assign(arr: list[Any], key: int, val: Any):
     # https://stackoverflow.com/questions/20567465/dynamically-growing-a-python-array-when-assigning-to-it
     try:
         arr[key] = val
@@ -72,8 +73,3 @@ def arr_assign(arr, key, val):
         arr.extend(((key + 1) - len(arr)) * [None])
         arr[key] = val
         return
-
-
-class Symbol(object):
-    def __init__(self, name):
-        self.name = name

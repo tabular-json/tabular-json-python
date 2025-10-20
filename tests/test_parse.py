@@ -49,7 +49,7 @@ class ParseTestCase(unittest.TestCase):
                             self.assertRaisesRegex(
                                 SyntaxError,
                                 re.escape(test["throws"]),
-                                lambda: parse(test["input"]),
+                                lambda: print("output: ", parse(test["input"])),
                             )
 
 

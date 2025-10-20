@@ -2,7 +2,7 @@ from math import inf
 from typing import Any, Callable
 
 from tabularjson.objects import set_in
-from tabularjson.types import TableField, SetValue, ParseResult
+from tabularjson.types import TableFieldSetter, SetValue, ParseResult, Record
 
 
 def parse(text: str) -> Any:
@@ -93,7 +93,7 @@ def parse(text: str) -> Any:
         i += 1
         skip_whitespace()
 
-        array = []
+        array: list[Any] = []
         initial = True
         while i < len(text) and text_at(i) != "]":
             if not initial:
@@ -120,7 +120,7 @@ def parse(text: str) -> Any:
 
         parsed, value = parse_value()
 
-        if type(value) is str and text_at(i) == ",":
+        if parsed and type(value) is str and text_at(i) == ",":
             i = 0
 
             skip_whitespace()
@@ -128,7 +128,7 @@ def parse(text: str) -> Any:
             fields = parse_table_fields()
             eat_table_row_separator()
 
-            rows = []
+            rows: list[Record] = []
 
             while i < len(text):
                 rows.append(parse_table_row(fields))
@@ -138,7 +138,7 @@ def parse(text: str) -> Any:
 
             return True, rows
 
-        return True, value
+        return parsed, value
 
     def parse_table() -> ParseResult:
         nonlocal i
@@ -153,7 +153,7 @@ def parse(text: str) -> Any:
         fields = parse_table_fields()
         eat_table_row_separator()
 
-        rows = []
+        rows: list[Record] = []
         while i < len(text) and text[i : i + 3] != "---":
             rows.append(parse_table_row(fields))
             eat_table_row_separator()
@@ -164,10 +164,10 @@ def parse(text: str) -> Any:
 
         return True, rows
 
-    def parse_table_fields() -> list[TableField]:
+    def parse_table_fields() -> list[TableFieldSetter]:
         nonlocal i
 
-        fields: list[TableField] = []
+        fields: list[TableFieldSetter] = []
         initial_field = True
 
         while i < len(text) and text_at(i) != "\n":
@@ -177,7 +177,7 @@ def parse(text: str) -> Any:
             else:
                 initial_field = False
 
-            keys = [parse_string_or(raise_table_field_expected)]
+            keys: list[str] = [parse_string_or(raise_table_field_expected)]
             skip_table_whitespace()
 
             while i < len(text) and text_at(i) == ".":
@@ -191,8 +191,8 @@ def parse(text: str) -> Any:
 
         return fields
 
-    def parse_table_row(fields: list[TableField]) -> dict[str, Any]:
-        row = {}
+    def parse_table_row(fields: list[TableFieldSetter]) -> Record:
+        row: Record = {}
 
         for index, field in enumerate(fields):
             parsed, value = parse_element()
@@ -369,10 +369,11 @@ def parse(text: str) -> Any:
                 else:
                     raise_invalid_escape_character(i)
             else:
-                if is_valid_string_character(text_at(i)):
-                    result += text_at(i)
+                c = text_at(i)
+                if c is not None and is_valid_string_character(c):
+                    result += c
                 else:
-                    raise_invalid_character(text_at(i))
+                    raise_invalid_character(c or "")
             i += 1
 
         expect_end_of_string()
@@ -384,7 +385,7 @@ def parse(text: str) -> Any:
             else result.encode("utf-16", "surrogatepass").decode("utf-16")
         )
 
-    def parse_string_or(raise_error) -> str:
+    def parse_string_or(raise_error: Callable[[], None]) -> str:
         parsed, string = parse_string()
         if not parsed:
             raise_error()
@@ -543,11 +544,11 @@ def parse(text: str) -> Any:
     return root_value
 
 
-def is_whitespace(char: str) -> bool:
+def is_whitespace(char: str | None) -> bool:
     return char in set(" \n\t\r")
 
 
-def is_table_whitespace(char: str) -> bool:
+def is_table_whitespace(char: str | None) -> bool:
     return char in set(" \t\r")
 
 
@@ -555,11 +556,11 @@ def is_hex(char: str | None) -> bool:
     return char in set("0123456789abcdefABCDEF") if char else False
 
 
-def is_digit(char: str) -> bool:
+def is_digit(char: str | None) -> bool:
     return char in set("0123456789")
 
 
-def is_non_zero_digit(char: str) -> bool:
+def is_non_zero_digit(char: str | None) -> bool:
     return char in set("123456789")
 
 
@@ -572,14 +573,14 @@ def create_set_value(keys: list[str]) -> SetValue:
     if len(keys) == 1:
         first = keys[0]
 
-        def set_value(record, value) -> None:
+        def set_value(record: Record, value: Any) -> None:
             record[first] = value
 
         return set_value
     else:
 
-        def set_value(record, value) -> None:
-            set_in(record, keys, value)
+        def set_value(record: Record, value: Any) -> None:
+            _ = set_in(record, keys, value)
 
         return set_value
 
