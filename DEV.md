@@ -65,7 +65,7 @@ ruff format
     python -m build
     ```
 
-8.  Publish on PyPi:
+8.  Publish on PyPI:
 
     ```
     twine check dist/*

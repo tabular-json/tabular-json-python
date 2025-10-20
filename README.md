@@ -4,7 +4,7 @@ This is a Python implementation of **Tabular-JSON**, a superset of JSON adding C
 
 ## Install
 
-Install via PyPi: https://pypi.org/project/tabularjson/
+Install via PyPI: https://pypi.org/project/tabularjson/
 
 ```
 pip install tabularjson
