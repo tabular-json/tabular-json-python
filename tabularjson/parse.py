@@ -9,6 +9,31 @@ def parse(text: str) -> Any:
     """
     Parse a string containing Tabular-JSON data into JSON.
 
+    Example:
+
+        text = \"\"\"{
+                "id": 1,
+                "name": "Brandon",
+                "friends": ---
+                "id", "name"
+                    2,    "Joe"
+                    3,    "Sarah"
+                          ---
+            }
+        \"\"\"
+
+        data = parse(text)
+
+        print(data)
+        # {
+        #     'id': 1,
+        #     'name': 'Brandon',
+        #     'friends': [
+        #         {'id': 2, 'name': 'Joe'},
+        #         {'id': 3, 'name': 'Sarah'}
+        #     ]
+        # }
+
     :param text: A string containing Tabular-JSON data
     :return: Returns the parsed JSON data
     """
@@ -353,7 +378,11 @@ def parse(text: str) -> Any:
         expect_end_of_string()
         i += 1
 
-        return result if not has_unicode else result.encode('utf-16', 'surrogatepass').decode('utf-16')
+        return (
+            result
+            if not has_unicode
+            else result.encode("utf-16", "surrogatepass").decode("utf-16")
+        )
 
     def parse_string_or(raise_error):
         string = parse_string()
@@ -495,7 +524,9 @@ def parse(text: str) -> Any:
         return f"at position {i}"
 
     def got() -> str:
-        return f"but got '{text_at(i)}'" if i < len(text) else "but reached end of input"
+        return (
+            f"but got '{text_at(i)}'" if i < len(text) else "but reached end of input"
+        )
 
     def got_at() -> str:
         return f"{got()} {pos()}"

@@ -26,6 +26,7 @@ def get_in(obj, path):
 
     return value
 
+
 def set_in(obj, path: Path, value: Any):
     nested = obj
     i_last = len(path) - 1
@@ -50,6 +51,7 @@ def set_in(obj, path: Path, value: Any):
         nested[path[i_last]] = value
 
     return obj
+
 
 def arr_assign(arr, key, val):
     # https://stackoverflow.com/questions/20567465/dynamically-growing-a-python-array-when-assigning-to-it

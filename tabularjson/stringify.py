@@ -12,6 +12,31 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
     """
     Stringify data into a string containing Tabular-JSON.
 
+    Example:
+
+        data = {
+            'id': 1,
+            'name': 'Brandon',
+            'friends': [
+                {'id': 2, 'name': 'Joe'},
+                {'id': 3, 'name': 'Sarah'}
+            ]
+        }
+
+        text = stringify(data, {"indentation": 4, "trailingCommas": False})
+
+        print(text)
+        # {
+        #     "id": 1,
+        #     "name": "Brandon",
+        #     "friends": ---
+        #         "id", "name"
+        #         2,    "Joe"
+        #         3,    "Sarah"
+        #     ---
+        # }
+
+
     :param data: JSON data
     :param options: A dict with indentation and trailingCommas
     :return: Returns a string containing Tabular-JSON.

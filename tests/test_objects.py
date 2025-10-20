@@ -25,11 +25,11 @@ class ObjectsTestCase(unittest.TestCase):
         self.assertEqual(get_in({"nested": True}, ["nested", "foo", "bar"]), undefined)
 
     def test_set_in(self):
-        self.assertEqual(set_in({}, ['name'], 'Joe'), { 'name': 'Joe' })
-        self.assertEqual(set_in({}, ['address', 'city'], 'Rotterdam'), {
-            'address': { 'city': 'Rotterdam' }
-        })
+        self.assertEqual(set_in({}, ["name"], "Joe"), {"name": "Joe"})
+        self.assertEqual(
+            set_in({}, ["address", "city"], "Rotterdam"),
+            {"address": {"city": "Rotterdam"}},
+        )
 
     def test_set_in_array(self):
-        self.assertEqual(set_in({}, ['values', 0], 42), { 'values': [42] })
-
+        self.assertEqual(set_in({}, ["values", 0], 42), {"values": [42]})
