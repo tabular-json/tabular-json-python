@@ -504,7 +504,7 @@ def parse(text: str) -> Any:
         raise SyntaxError(f"Array item expected {got_at()}")
 
     def raise_value_expected():
-        raise SyntaxError(f"JSON value expected {got_at()}")
+        raise SyntaxError(f"Value expected {got_at()}")
 
     def raise_invalid_character(char: str):
         raise SyntaxError(f"Invalid character '{char}' {pos()}")
