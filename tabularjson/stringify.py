@@ -3,9 +3,9 @@ from math import isnan, inf
 from symtable import Function
 from typing import Optional, Any
 
-from tabularjson.fields import collect_nested_paths
+from tabularjson.tabular import collect_fields, is_tabular
 from tabularjson.objects import get_in, undefined
-from tabularjson.types import StringifyOptions, is_tabular
+from tabularjson.types import StringifyOptions
 
 
 def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
@@ -112,7 +112,7 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
         child_indent = (indent + indentation) if (indentation and indent) else indent
         col_separator = ", " if indentation else ","
 
-        fields = collect_fields(array)
+        fields = get_fields(array)
 
         text = "" if is_root else "---\n"
 
@@ -183,8 +183,8 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
     return stringify_value(data, "", global_indentation)
 
 
-def collect_fields(records: list[Any]):
-    nested_paths = collect_nested_paths(records)
+def get_fields(records: list[Any]):
+    nested_paths = collect_fields(records)
 
     return list(
         map(

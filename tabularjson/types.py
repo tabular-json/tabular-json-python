@@ -6,14 +6,6 @@ class StringifyOptions(TypedDict):
     trailingCommas: NotRequired[bool]
 
 
-def is_tabular(value: Any) -> bool:
-    return (
-        type(value) is list
-        and len(value) > 0
-        and all(type(item) is dict for item in value)
-    )
-
-
 Path = list[str | int]
 
 SetValue = Callable[[dict[str, Any], Any], None]

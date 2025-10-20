@@ -1,9 +1,19 @@
+from typing import Any
+
 from tabularjson.objects import Symbol
 
 leaf = Symbol("leaf")
 
 
-def collect_nested_paths(array: list) -> list[str | int]:
+def is_tabular(value: Any) -> bool:
+    return (
+        type(value) is list
+        and len(value) > 0
+        and all(type(item) is dict for item in value)
+    )
+
+
+def collect_fields(array: list) -> list[str | int]:
     merged = {}
 
     for item in array:
