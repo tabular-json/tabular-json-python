@@ -4,7 +4,7 @@ from symtable import Function
 from typing import Optional, Any
 
 from tabularjson.tabular import collect_fields, is_tabular
-from tabularjson.objects import get_in, undefined
+from tabularjson.objects import get_in
 from tabularjson.types import StringifyOptions
 
 
@@ -77,9 +77,6 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
         if type(value) is dict:
             return stringify_object(value, indent, indentation)
 
-        if value is undefined:
-            return ""
-
         raise TypeError("Unknown type of data: " + str(type(value)))
 
     def stringify_array(array: list, indent: str, indentation: str | None):
@@ -116,14 +113,16 @@ def stringify(data: Any, options: Optional[StringifyOptions] = None) -> str:
 
         text = "" if is_root else "---\n"
 
+        def stringify_cell(item, field):
+            value, exists = field["get_value"](item)
+            return stringify_value(value, child_indent, None) if exists else ""
+
         header = list(map(lambda field: field["name"], fields))
         rows = list(
             map(
                 lambda item: list(
                     map(
-                        lambda field: stringify_value(
-                            field["getValue"](item), child_indent, None
-                        ),
+                        lambda field: stringify_cell(item, field),
                         fields,
                     )
                 ),
@@ -190,7 +189,7 @@ def get_fields(records: list[Any]):
         map(
             lambda path: {
                 "name": stringify_field(path),
-                "getValue": create_get_value(path),
+                "get_value": create_get_value(path),
             },
             nested_paths,
         )
@@ -200,7 +199,7 @@ def get_fields(records: list[Any]):
 def create_get_value(path):
     if len(path) == 1:
         key = path[0]
-        return lambda item: item[key]
+        return lambda item: (item[key], True) if key in item else (None, False)
 
     return lambda item: get_in(item, path)
 

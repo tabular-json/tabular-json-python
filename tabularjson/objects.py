@@ -3,28 +3,35 @@ from typing import Any
 from tabularjson.types import Path
 
 
-def get_in(obj, path):
+def get_in(obj, path) -> tuple[Any, bool]:
     """
     Get a nested property from a nested object or array.
-    Returns the Symbol undefined when not found.
+    Returns a tuple (value: Any, exists: bool).
     """
     value = obj
     i = 0
 
-    while i < len(path) and value is not undefined:
+    while i < len(path):
         key = path[i]
 
         if type(value) is dict:
-            value = value[key] if key in value else undefined
+            if key in value:
+                value = value[key]
+            else:
+                return None, False
         elif type(value) is list:
             index = int(key)
-            value = value[index] if index < len(value) else undefined
+
+            if index < len(value):
+                value = value[index]
+            else:
+                return None, False
         else:
-            value = undefined
+            return None, False
 
         i += 1
 
-    return value
+    return value, True
 
 
 def set_in(obj, path: Path, value: Any):
@@ -70,6 +77,3 @@ def arr_assign(arr, key, val):
 class Symbol(object):
     def __init__(self, name):
         self.name = name
-
-
-undefined = Symbol("undefined")

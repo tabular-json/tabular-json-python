@@ -1,8 +1,8 @@
 from math import inf
 from typing import Any, Callable
 
-from tabularjson.objects import undefined, set_in
-from tabularjson.types import TableField, SetValue
+from tabularjson.objects import set_in
+from tabularjson.types import TableField, SetValue, ParseResult
 
 
 def parse(text: str) -> Any:
@@ -40,11 +40,11 @@ def parse(text: str) -> Any:
 
     i = 0
 
-    def parse_object():
+    def parse_object() -> ParseResult:
         nonlocal i
 
         if text_at(i) != "{":
-            return undefined
+            return False, None
 
         i += 1
         skip_whitespace()
@@ -68,9 +68,9 @@ def parse(text: str) -> Any:
 
             skip_whitespace()
             eat_colon()
-            value = parse_value()
+            parsed, value = parse_value()
 
-            if value is undefined:
+            if not parsed:
                 raise_object_value_expected()
 
             if key in obj and not value == obj[key]:
@@ -82,13 +82,13 @@ def parse(text: str) -> Any:
             raise_object_key_or_end_expected()
         i += 1
 
-        return obj
+        return True, obj
 
-    def parse_array():
+    def parse_array() -> ParseResult:
         nonlocal i
 
         if text_at(i) != "[":
-            return undefined
+            return False, None
 
         i += 1
         skip_whitespace()
@@ -113,12 +113,12 @@ def parse(text: str) -> Any:
             raise_array_item_or_end_expected()
         i += 1
 
-        return array
+        return True, array
 
-    def parse_root_table():
+    def parse_root_table() -> ParseResult:
         nonlocal i
 
-        value = parse_value()
+        parsed, value = parse_value()
 
         if type(value) is str and text_at(i) == ",":
             i = 0
@@ -136,15 +136,15 @@ def parse(text: str) -> Any:
                 if i < len(text):
                     eat_table_row_separator()
 
-            return rows
+            return True, rows
 
-        return value
+        return True, value
 
-    def parse_table():
+    def parse_table() -> ParseResult:
         nonlocal i
 
         if text_at(i) != "-" or text[i : i + 3] != "---":
-            return undefined
+            return False, None
 
         i += 3
         skip_table_whitespace()
@@ -162,9 +162,9 @@ def parse(text: str) -> Any:
             raise_table_row_or_end_expected()
         i += 3
 
-        return rows
+        return True, rows
 
-    def parse_table_fields():
+    def parse_table_fields() -> list[TableField]:
         nonlocal i
 
         fields: list[TableField] = []
@@ -195,10 +195,10 @@ def parse(text: str) -> Any:
         row = {}
 
         for index, field in enumerate(fields):
-            value = parse_element()
+            parsed, value = parse_element()
             skip_table_whitespace()
 
-            if value != undefined:
+            if parsed:
                 field["set_value"](row, value)
 
             if index < len(fields) - 1:
@@ -207,65 +207,65 @@ def parse(text: str) -> Any:
 
         return row
 
-    def parse_value():
+    def parse_value() -> ParseResult:
         skip_whitespace()
 
-        value = parse_element()
+        parsed, value = parse_element()
 
         skip_whitespace()
 
-        return value
+        return parsed, value
 
     def parse_value_or(raise_error: Callable[[], None]):
-        value = parse_value()
-        if value == undefined:
+        parsed, value = parse_value()
+        if not parsed:
             raise_error()
 
         return value
 
-    def parse_element():
-        elem = parse_object()
-        if elem != undefined:
-            return elem
+    def parse_element() -> ParseResult:
+        parsed, elem = parse_object()
+        if parsed:
+            return parsed, elem
 
-        elem = parse_array()
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_array()
+        if parsed:
+            return parsed, elem
 
-        elem = parse_table()
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_table()
+        if parsed:
+            return parsed, elem
 
-        elem = parse_string()
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_string()
+        if parsed:
+            return parsed, elem
 
-        elem = parse_number()
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_number()
+        if parsed:
+            return parsed, elem
 
-        elem = parse_keyword("true", True)
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_keyword("true", True)
+        if parsed:
+            return parsed, elem
 
-        elem = parse_keyword("false", False)
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_keyword("false", False)
+        if parsed:
+            return parsed, elem
 
-        elem = parse_keyword("null", None)
-        if elem != undefined:
-            return elem
+        parsed, elem = parse_keyword("null", None)
+        if parsed:
+            return parsed, elem
 
-        return undefined
+        return False, None
 
-    def parse_keyword(name: str, value: Any):
+    def parse_keyword(name: str, value: Any) -> ParseResult:
         nonlocal i
 
         if text[i : i + len(name)] == name:
             i += len(name)
-            return value
+            return True, value
 
-        return undefined
+        return False, None
 
     def skip_whitespace():
         while skip_whitespace_chars() or skip_line_comment() or skip_block_comment():
@@ -337,11 +337,11 @@ def parse(text: str) -> Any:
 
         return False
 
-    def parse_string():
+    def parse_string() -> ParseResult:
         nonlocal i
 
         if text_at(i) != '"':
-            return undefined
+            return False, None
 
         i += 1
 
@@ -378,36 +378,36 @@ def parse(text: str) -> Any:
         expect_end_of_string()
         i += 1
 
-        return (
+        return True, (
             result
             if not has_unicode
             else result.encode("utf-16", "surrogatepass").decode("utf-16")
         )
 
-    def parse_string_or(raise_error):
-        string = parse_string()
-        if string == undefined:
+    def parse_string_or(raise_error) -> str:
+        parsed, string = parse_string()
+        if not parsed:
             raise_error()
 
         return string
 
-    def parse_number():
+    def parse_number() -> ParseResult:
         nonlocal i
 
         start = i
         is_int = True
 
-        special = parse_keyword("inf", inf)
-        if special != undefined:
-            return special
+        parsed, special = parse_keyword("inf", inf)
+        if parsed:
+            return parsed, special
 
-        special = parse_keyword("-inf", -inf)
-        if special != undefined:
-            return special
+        parsed, special = parse_keyword("-inf", -inf)
+        if parsed:
+            return parsed, special
 
-        special = parse_keyword("nan", inf / inf)
-        if special != undefined:
-            return special
+        parsed, special = parse_keyword("nan", inf / inf)
+        if parsed:
+            return parsed, special
 
         if text_at(i) == "-":
             i += 1
@@ -438,9 +438,9 @@ def parse(text: str) -> Any:
                 i += 1
 
         if i > start:
-            return int(text[start:i]) if is_int else float(text[start:i])
+            return True, int(text[start:i]) if is_int else float(text[start:i])
 
-        return undefined
+        return False, None
 
     def eat_comma():
         nonlocal i
@@ -534,8 +534,8 @@ def parse(text: str) -> Any:
     def text_at(index: int) -> str | None:
         return text[index] if index < len(text) else None
 
-    root_value = parse_root_table()
-    if root_value is undefined:
+    root_parsed, root_value = parse_root_table()
+    if not root_parsed:
         raise_value_expected()
 
     expect_end_of_input()

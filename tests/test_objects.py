@@ -1,28 +1,37 @@
 import unittest
 
-from tabularjson.objects import get_in, undefined, set_in
+from tabularjson.objects import get_in, set_in
 
 
 class ObjectsTestCase(unittest.TestCase):
     def test_get_in(self):
-        self.assertEqual(get_in({"name": "Joe"}, ["name"]), "Joe")
-        self.assertEqual(get_in({"name": "Joe"}, ["foo"]), undefined)
-        self.assertEqual(get_in({"nested": {"name": "Joe"}}, ["nested", "name"]), "Joe")
+        self.assertEqual(get_in({"name": "Joe"}, ["name"]), ("Joe", True))
+        self.assertEqual(get_in({"name": "Joe"}, ["foo"]), (None, False))
         self.assertEqual(
-            get_in({"nested": {"array": ["a", "b"]}}, ["nested", "array", "1"]), "b"
+            get_in({"nested": {"name": "Joe"}}, ["nested", "name"]), ("Joe", True)
+        )
+        self.assertEqual(
+            get_in({"nested": {"array": ["a", "b"]}}, ["nested", "array", "1"]),
+            ("b", True),
         )
         self.assertEqual(
             get_in({"nested": {"array": ["a", "b"]}}, ["nested", "array", "99"]),
-            undefined,
+            (None, False),
         )
         self.assertEqual(
             get_in({"nested": {"array": ["a", "b"]}}, ["nested", "foo", "bar"]),
-            undefined,
+            (None, False),
         )
-        self.assertEqual(get_in({"nested": None}, ["nested", "foo", "bar"]), undefined)
-        self.assertEqual(get_in({}, ["nested", "foo", "bar"]), undefined)
-        self.assertEqual(get_in({"nested": 123}, ["nested", "foo", "bar"]), undefined)
-        self.assertEqual(get_in({"nested": True}, ["nested", "foo", "bar"]), undefined)
+        self.assertEqual(
+            get_in({"nested": None}, ["nested", "foo", "bar"]), (None, False)
+        )
+        self.assertEqual(get_in({}, ["nested", "foo", "bar"]), (None, False))
+        self.assertEqual(
+            get_in({"nested": 123}, ["nested", "foo", "bar"]), (None, False)
+        )
+        self.assertEqual(
+            get_in({"nested": True}, ["nested", "foo", "bar"]), (None, False)
+        )
 
     def test_set_in(self):
         self.assertEqual(set_in({}, ["name"], "Joe"), {"name": "Joe"})

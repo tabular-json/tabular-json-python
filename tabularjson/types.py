@@ -6,11 +6,15 @@ class StringifyOptions(TypedDict):
     trailingCommas: NotRequired[bool]
 
 
-Path = list[str | int]
+type Path = list[str | int]
 
-SetValue = Callable[[dict[str, Any], Any], None]
+type SetValue = Callable[[dict[str, Any], Any], None]
 
 
 class TableField(TypedDict):
     keys: list[str]
     set_value: SetValue
+
+
+# Parse result is [True, ...] when something is parsed, and [False, None] otherwise
+type ParseResult = tuple[bool, Any]
