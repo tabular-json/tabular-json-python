@@ -4,6 +4,7 @@ import unittest
 from os import path
 
 from tabularjson import stringify, StringifyOptions
+from tabularjson.table_properties import no_nested_arrays, no_nested_tables
 
 
 class StringifyTestCase(unittest.TestCase):
@@ -59,6 +60,50 @@ class StringifyTestCase(unittest.TestCase):
                             self.assertEqual(
                                 stringify(test["input"], options), test["output"]
                             )
+
+    def test_output_as_table(self):
+        json = {
+            "scores": [{"values": [1, 2, 3]}, {"values": [5, 6, 7]}],
+            "data": [{"measurements": [{"x": 1, "y": 3}, {"x": 2, "y": 4}]}],
+        }
+
+        self.assertEqual(
+            stringify(json),
+            '{"scores":---\n'
+            + '"values"\n'
+            + "[1,2,3]\n"
+            + "[5,6,7]\n"
+            + '---,"data":---\n'
+            + '"measurements"\n'
+            + "---\n"
+            + '"x","y"\n'
+            + "1,3\n"
+            + "2,4\n"
+            + "---\n"
+            + "---}",
+        )
+
+        self.assertEqual(
+            stringify(json, {"output_as_table": no_nested_tables}),
+            '{"scores":---\n'
+            + '"values"\n'
+            + "[1,2,3]\n"
+            + "[5,6,7]\n"
+            + '---,"data":[{"measurements":---\n'
+            + '"x","y"\n'
+            + "1,3\n"
+            + "2,4\n"
+            + "---}]}",
+        )
+
+        self.assertEqual(
+            stringify(json, {"output_as_table": no_nested_arrays}),
+            '{"scores":[{"values":[1,2,3]},{"values":[5,6,7]}],"data":[{"measurements":---\n'
+            + '"x","y"\n'
+            + "1,3\n"
+            + "2,4\n"
+            + "---}]}",
+        )
 
 
 if __name__ == "__main__":

@@ -4,8 +4,10 @@ from symtable import Function
 from typing import Any
 
 from tabularjson.objects import get_in
+from tabularjson.table_properties import always
 from tabularjson.tabular import collect_fields, is_tabular
 from tabularjson.types import (
+    OutputAsTable,
     StringifyOptions,
     Path,
     TableFieldGetter,
@@ -52,6 +54,9 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
         options.get("indentation") if options else None
     )
     trailing_commas = (options.get("trailingCommas") if options else False) or False
+    output_as_table: OutputAsTable[Any] = (
+        options.get("output_as_table") if options else always
+    ) or always
 
     def stringify_value(value: Any, indent: str, do_indent: bool) -> str:
         # number
@@ -72,7 +77,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             return stringify_primitive_value(value)
 
         # table
-        if is_tabular(value):
+        if is_tabular(value) and output_as_table(value):
             return stringify_table(value, indent)
 
         # array
