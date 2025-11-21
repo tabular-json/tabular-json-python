@@ -31,7 +31,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             ]
         }
 
-        text = stringify(data, {"indentation": 4, "trailingCommas": False})
+        text = stringify(data, {"indentation": 4, "trailing_commas": False})
 
         print(text)
         # {
@@ -46,14 +46,19 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
 
 
     :param data: JSON data
-    :param options: A dict with indentation and trailingCommas
+    :param options: A dict with indentation and trailing_commas
     :return: Returns a string containing Tabular-JSON.
     """
 
     global_indentation = resolve_indentation(
         options.get("indentation") if options else None
     )
-    trailing_commas = (options.get("trailingCommas") if options else False) or False
+    # the option trailingCommas is deprecated, it is renamed to trailing_commas
+    trailing_commas = (
+        options.get("trailing_commas") or options.get("trailingCommas")
+        if options
+        else False
+    ) or False
     output_as_table: OutputAsTable[Any] = (
         options.get("output_as_table") if options else always
     ) or always

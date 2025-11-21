@@ -39,7 +39,7 @@ print(data)
 
 data["friends"].append({"id": 4, "name": "Alan"})
 
-options: StringifyOptions = {"indentation": 4, "trailingCommas": False}
+options: StringifyOptions = {"indentation": 4, "trailing_commas": False}
 updatedText = stringify(data, options)
 print(updatedText)
 # {
@@ -113,7 +113,7 @@ Where:
 - `data` is a JSON object or array
 - `options` is an optional object which can have the following properties:
   - `indentation: int | str | None` an integer specifying the number of spaces in the indentation, or a string containing the indentation itself, like `"\t"` to get tab indentation. When `None` (default), the output will not be indented.
-  - `trailingCommas: bool` when true, the output will contain trailing commas after the last item in an array and the last key/value pair in an object. `False` by default.
+  - `trailing_commas: bool` when true, the output will contain trailing commas after the last item in an array and the last key/value pair in an object. `False` by default.
   - `output_as_table: Callable[[TabularData[T]], bool]` a callback specifying whether to an array containing tabular data as table or not. This option is explained in detail in the section [Output as table](#output-as-table) below.
 - `text` is a string containing Tabular-JSON data, returned by the function
 
@@ -131,7 +131,7 @@ data = {
     ]
 }
 
-options: StringifyOptions = {"indentation": 4, "trailingCommas": False}
+options: StringifyOptions = {"indentation": 4, "trailing_commas": False}
 text = stringify(data, options)
 
 print(text)

@@ -113,5 +113,5 @@ if __name__ == "__main__":
 def to_stringify_options(javascript_options) -> StringifyOptions:
     return {
         "indentation": javascript_options.get("indentation", None),
-        "trailingCommas": javascript_options.get("trailingCommas", None),
+        "trailing_commas": javascript_options.get("trailingCommas", None),
     }

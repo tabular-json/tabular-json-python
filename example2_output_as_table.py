@@ -12,7 +12,7 @@ data = {
     ],
 }
 
-# Use the default table strategy
+print("Using the default table strategy:")
 print(stringify(data, {"indentation": 2}))
 # {
 #   "careTakers": ---
@@ -27,7 +27,9 @@ print(stringify(data, {"indentation": 2}))
 #   ---
 # }
 
-# Output as table only when the data is homogeneous: when all list items have the same keys
+print(
+    "Output as table only when the data is homogeneous (all list items have the same keys):"
+)
 print(stringify(data, {"indentation": 2, "output_as_table": is_homogeneous}))
 # {
 #   "careTakers": ---
@@ -48,7 +50,7 @@ print(stringify(data, {"indentation": 2, "output_as_table": is_homogeneous}))
 #   ]
 # }
 
-# No not output the table with objects having a key "animalId"
+print("Do not output the table with objects having a key 'animalId':")
 options: StringifyOptions = {
     "indentation": 4,
     "output_as_table": lambda tabular_data: "animalId" not in tabular_data[0],

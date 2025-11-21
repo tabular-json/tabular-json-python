@@ -12,7 +12,7 @@ type OutputAsTable[T] = Callable[[TabularData[T]], bool]
 
 class StringifyOptions(TypedDict, Generic[T]):
     indentation: NotRequired[str | int | None]
-    trailingCommas: NotRequired[bool]
+    trailing_commas: NotRequired[bool]
     output_as_table: NotRequired[OutputAsTable[T]]
 
 
