@@ -7,7 +7,8 @@ Create, activate, deactivate a virtual environment:
 ```bash
 python -m venv venv
 
-.\venv\Scripts\activate
+.\venv\Scripts\activate  # windows
+source venv/bin/activate # linux
 
 deactivate
 ```
