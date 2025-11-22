@@ -4,8 +4,10 @@ from symtable import Function
 from typing import Any
 
 from tabularjson.objects import get_in
+from tabularjson.table_properties import always
 from tabularjson.tabular import collect_fields, is_tabular
 from tabularjson.types import (
+    OutputAsTable,
     StringifyOptions,
     Path,
     TableFieldGetter,
@@ -29,7 +31,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             ]
         }
 
-        text = stringify(data, {"indentation": 4, "trailingCommas": False})
+        text = stringify(data, {"indentation": 4, "trailing_commas": False})
 
         print(text)
         # {
@@ -44,14 +46,22 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
 
 
     :param data: JSON data
-    :param options: A dict with indentation and trailingCommas
+    :param options: A dict with indentation and trailing_commas
     :return: Returns a string containing Tabular-JSON.
     """
 
     global_indentation = resolve_indentation(
         options.get("indentation") if options else None
     )
-    trailing_commas = (options.get("trailingCommas") if options else False) or False
+    # the option trailingCommas is deprecated, it is renamed to trailing_commas
+    trailing_commas = (
+        options.get("trailing_commas") or options.get("trailingCommas")
+        if options
+        else False
+    ) or False
+    output_as_table: OutputAsTable[Any] = (
+        options.get("output_as_table") if options else always
+    ) or always
 
     def stringify_value(value: Any, indent: str, do_indent: bool) -> str:
         # number
@@ -72,7 +82,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             return stringify_primitive_value(value)
 
         # table
-        if is_tabular(value):
+        if is_tabular(value) and output_as_table(value):
             return stringify_table(value, indent)
 
         # array
