@@ -249,7 +249,10 @@ def calculate_column_widths(header: list[str], rows: list[list[str]]) -> list[in
 
     for row in rows:
         for i, field in enumerate(row):
-            widths[i] = max(widths[i], len(field))
+            # Recon with the case of a nested table which has multiple lines.
+            # We set the width to zero as a simple solution.
+            width = 0 if "\n" in field else len(field)
+            widths[i] = max(widths[i], width)
 
     # Note: we add 1 space to account for the comma,
     # and another to ensure there is at least 1 space between the columns
