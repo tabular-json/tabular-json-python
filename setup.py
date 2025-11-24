@@ -9,7 +9,7 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="tabularjson",
-    version="1.1.0",
+    version="1.1.1",
     packages=find_packages(include=["tabularjson"]),
     description="Tabular-JSON: A superset of JSON adding CSV-like tables",
     long_description=long_description,
