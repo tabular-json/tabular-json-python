@@ -32,6 +32,8 @@ python -m unittest -v
 ruff format
 ```
 
+To test whether the library works on different versions of Python, use `pyenv`.
+
 ## Publish
 
 1.  Format the code:
@@ -60,7 +62,7 @@ ruff format
 6.  Clear the `dist` folder
 
 7.  Build the library:
- 
+
     ```
     python -m build
     ```
