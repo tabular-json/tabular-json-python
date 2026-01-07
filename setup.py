@@ -9,7 +9,7 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="tabularjson",
-    version="1.0.2",
+    version="1.1.1",
     packages=find_packages(include=["tabularjson"]),
     description="Tabular-JSON: A superset of JSON adding CSV-like tables",
     long_description=long_description,
@@ -22,12 +22,6 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: ISC License (ISCL)",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Operating System :: OS Independent",

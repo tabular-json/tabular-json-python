@@ -24,7 +24,7 @@ print(data)
 
 data["friends"].append({"id": 4, "name": "Alan"})
 
-options: StringifyOptions = {"indentation": 4, "trailingCommas": False}
+options: StringifyOptions = {"indentation": 4, "trailing_commas": False}
 updatedText = stringify(data, options)
 print(updatedText)
 # {

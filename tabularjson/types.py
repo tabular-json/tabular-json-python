@@ -1,9 +1,19 @@
-from typing import TypedDict, NotRequired, Any, Callable
+from typing import Generic, TypeVar, TypedDict, NotRequired, Any, Callable
 
 
-class StringifyOptions(TypedDict):
+T = TypeVar("T")
+
+type NonEmptyList[T] = list[T]
+
+type TabularData[T] = NonEmptyList[dict[str, T]]
+
+type OutputAsTable[T] = Callable[[TabularData[T]], bool]
+
+
+class StringifyOptions(TypedDict, Generic[T]):
     indentation: NotRequired[str | int | None]
-    trailingCommas: NotRequired[bool]
+    trailing_commas: NotRequired[bool]
+    output_as_table: NotRequired[OutputAsTable[T]]
 
 
 class Symbol(object):
