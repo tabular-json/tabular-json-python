@@ -170,7 +170,7 @@ def parse(text: str) -> Any:
     def is_table_end():
         nonlocal i
 
-        if text[i : i + 3] != '---':
+        if text[i : i + 3] != "---":
             return False
 
         i_original = i
