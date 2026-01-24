@@ -1,5 +1,5 @@
 {
-  "source": "https://github.com/tabular-json/tabular-json/blob/v1.1.1/test-suite/parse.test.json",
+  "source": "https://github.com/tabular-json/tabular-json/blob/v1.1.2/test-suite/parse.test.json",
   "groups": [
     {
       "category": "object",
@@ -242,6 +242,26 @@
               "address": { "city": "Washington", "street": "18th Street NW" }
             }
           ]
+        }
+      ]
+    },
+    {
+      "category": "table",
+      "description": "parse a table containing a nested table ",
+      "tests": [
+        {
+          "input": "{\n  \"runs\": ---\n    \"data\", \"run-id\"\n    ---\n      \"time\", \"voltage\", \"current\"\n      1,      0.7,       -5.5\n      2,      0.7,       -7.5\n    ---,1\n  ---\n}",
+          "output": {
+            "runs": [
+              {
+                "data": [
+                  { "time": 1, "voltage": 0.7, "current": -5.5 },
+                  { "time": 2, "voltage": 0.7, "current": -7.5 }
+                ],
+                "run-id": 1
+              }
+            ]
+          }
         }
       ]
     },
