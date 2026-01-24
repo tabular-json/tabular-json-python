@@ -143,7 +143,7 @@ def parse(text: str) -> Any:
     def parse_table() -> ParseResult:
         nonlocal i
 
-        if text_at(i) != "-" or text[i : i + 3] != "---":
+        if is_table_start():
             return False, None
 
         i += 3
@@ -154,15 +154,36 @@ def parse(text: str) -> Any:
         eat_table_row_separator()
 
         rows: list[Record] = []
-        while i < len(text) and text[i : i + 3] != "---":
+        while i < len(text) and not is_table_end():
             rows.append(parse_table_row(fields))
             eat_table_row_separator()
 
-        if text[i : i + 3] != "---":
+        if not is_table_end():
             raise_table_row_or_end_expected()
         i += 3
 
         return True, rows
+
+    def is_table_start():
+        return text_at(i) != "-" or text[i : i + 3] != "---"
+
+    def is_table_end():
+        nonlocal i
+
+        if text[i : i + 3] != '---':
+            return False
+
+        i_original = i
+
+        # We need to lookahead to check whether this is a table start or end
+        # A table start is followed by a field name enclosed in double quotes
+        i += 3
+        skip_whitespace()
+        is_followed_by_field_name = text_at(i) == '"'
+
+        i = i_original
+
+        return not is_followed_by_field_name
 
     def parse_table_fields() -> list[TableFieldSetter]:
         nonlocal i
