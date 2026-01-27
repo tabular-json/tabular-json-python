@@ -143,7 +143,7 @@ def parse(text: str) -> Any:
     def parse_table() -> ParseResult:
         nonlocal i
 
-        if is_table_start():
+        if not is_table_start():
             return False, None
 
         i += 3
@@ -154,36 +154,22 @@ def parse(text: str) -> Any:
         eat_table_row_separator()
 
         rows: list[Record] = []
-        while i < len(text) and not is_table_end():
+        while i < len(text) and not is_table_end(rows):
             rows.append(parse_table_row(fields))
             eat_table_row_separator()
 
-        if not is_table_end():
+        if not is_table_end(rows):
             raise_table_row_or_end_expected()
         i += 3
 
         return True, rows
 
     def is_table_start():
-        return text_at(i) != "-" or text[i : i + 3] != "---"
+        return text_at(i) == "-" and text_at(i + 1) == "-" and text_at(i + 2) == "-"
 
-    def is_table_end():
-        nonlocal i
-
-        if text[i : i + 3] != "---":
-            return False
-
-        i_original = i
-
-        # We need to lookahead to check whether this is a table start or end
-        # A table start is followed by a field name enclosed in double quotes
-        i += 3
-        skip_whitespace()
-        is_followed_by_field_name = text_at(i) == '"'
-
-        i = i_original
-
-        return not is_followed_by_field_name
+    def is_table_end(rows):
+        # TODO: testing len(rows) > 0 is a workaround for some issues with nested tables, but it is no solid solution
+        return len(rows) > 0 and is_table_start()
 
     def parse_table_fields() -> list[TableFieldSetter]:
         nonlocal i
