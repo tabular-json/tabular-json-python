@@ -538,7 +538,7 @@ def parse(text: str) -> Any:
         raise SyntaxError(f"Array item or end of array ']' expected {got_at()}")
 
     def raise_table_row_or_end_expected():
-        raise SyntaxError(f"Table row or end of table '---' expected {got_at()}")
+        raise SyntaxError(f"Table row or end of table ')' expected {got_at()}")
 
     def raise_array_item_expected():
         raise SyntaxError(f"Array item expected {got_at()}")
