@@ -18,11 +18,11 @@ from tabularjson import parse, stringify, StringifyOptions
 text = """{
     "id": 1,
     "name": "Brandon",
-    "friends": ---
+    "friends": (
         "id", "name"
         2,    "Joe"
         3,    "Sarah"
-    ---
+    )
 }
 """
 
@@ -45,12 +45,12 @@ print(updatedText)
 # {
 #     "id": 1,
 #     "name": "Brandon",
-#     "friends": ---
+#     "friends": (
 #         "id", "name"
 #         2,    "Joe"
 #         3,    "Sarah"
 #         4,    "Alan"
-#     ---
+#     )
 # }
 ```
 
@@ -79,11 +79,11 @@ from tabularjson import parse
 text = """{
     "id": 1,
     "name": "Brandon",
-    "friends": ---
+    "friends": (
     "id", "name"
         2,    "Joe"
         3,    "Sarah"
-    ---
+    )
 }
 """
 
@@ -138,11 +138,11 @@ print(text)
 # {
 #     "id": 1,
 #     "name": "Brandon",
-#     "friends": ---
+#     "friends": (
 #         "id", "name"
 #         2,    "Joe"
 #         3,    "Sarah"
-#     ---
+#     )
 # }
 ```
 
@@ -186,11 +186,11 @@ data = {
 # Output as table only when the data is homogeneous: when all list items have the same keys
 print(stringify(data, {"indentation": 2, "output_as_table": is_homogeneous}))
 # {
-#   "careTakers": ---
+#   "careTakers": (
 #     "id", "name"
 #     1001, "Joe"
 #     1002, "Sarah"
-#   ---,
+#   ),
 #   "animals": [
 #     {
 #       "animalId": 1,

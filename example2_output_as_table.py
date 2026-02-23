@@ -15,16 +15,16 @@ data = {
 print("Using the default table strategy:")
 print(stringify(data, {"indentation": 2}))
 # {
-#   "careTakers": ---
+#   "careTakers": (
 #     "id", "name"
 #     1001, "Joe"
 #     1002, "Sarah"
-#   ---,
-#   "animals": ---
+#   ),
+#   "animals": (
 #     "animalId", "name",     "description"
 #     1,          "Elephant", "Elephants are the largest living land animals."
 #     2,          "Giraffe",
-#   ---
+#   )
 # }
 
 print(
@@ -32,11 +32,11 @@ print(
 )
 print(stringify(data, {"indentation": 2, "output_as_table": is_homogeneous}))
 # {
-#   "careTakers": ---
+#   "careTakers": (
 #     "id", "name"
 #     1001, "Joe"
 #     1002, "Sarah"
-#   ---,
+#   ),
 #   "animals": [
 #     {
 #       "animalId": 1,
@@ -57,11 +57,11 @@ options: StringifyOptions = {
 }
 print(stringify(data, options))
 # {
-#   "careTakers": ---
+#   "careTakers": (
 #     "id", "name"
 #     1001, "Joe"
 #     1002, "Sarah"
-#   ---,
+#   ),
 #   "animals": [
 #     {
 #       "animalId": 1,
