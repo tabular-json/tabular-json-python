@@ -183,9 +183,11 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
 
     def format_row(row: list[str], widths: list[int]):
         cells = map(
-            lambda entry: (entry[1] + ",").ljust(widths[entry[0]])
-            if entry[0] < len(widths) - 1
-            else entry[1] + "\n",
+            lambda entry: (
+                (entry[1] + ",").ljust(widths[entry[0]])
+                if entry[0] < len(widths) - 1
+                else entry[1] + "\n"
+            ),
             enumerate(row),
         )
 
