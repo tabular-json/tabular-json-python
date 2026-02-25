@@ -9,14 +9,14 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="tabularjson",
-    version="1.1.3",
+    version="2.0.0",
     packages=find_packages(include=["tabularjson"]),
     description="Tabular-JSON: A superset of JSON adding CSV-like tables",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://tabular-json.org/",
     author="Jos de Jong",
-    author_email="wjosdejong@gmail.com",
+    author_email="email@josdejong.com",
     license="ISC",
     classifiers=[
         "Intended Audience :: Developers",
