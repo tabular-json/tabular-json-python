@@ -1,13 +1,13 @@
 from typing import Any
 from tabularjson.tabular import is_tabular
-from tabularjson.types import Record, TabularData
+from tabularjson.types import Record, TabularData, Path
 
 
-def always[T](_: TabularData[T]) -> bool:
+def always[T](_tabular_data: TabularData[T], _path: Path = None) -> bool:
     return True
 
 
-def no_nested_arrays[T](tabular_data: TabularData[T]) -> bool:
+def no_nested_arrays[T](tabular_data: TabularData[T], _path: Path = None) -> bool:
     def recurse_object(object: Record) -> bool:
         for value in object.values():
             if type(value) is list:
@@ -21,7 +21,7 @@ def no_nested_arrays[T](tabular_data: TabularData[T]) -> bool:
     return all(recurse_object(item) for item in tabular_data)
 
 
-def no_nested_tables[T](tabular_data: TabularData[T]) -> bool:
+def no_nested_tables[T](tabular_data: TabularData[T], _path: Path = None) -> bool:
     def recurse(value: Any) -> bool:
         if is_tabular(value):
             return False
@@ -37,7 +37,7 @@ def no_nested_tables[T](tabular_data: TabularData[T]) -> bool:
     return all(recurse(item) for item in tabular_data)
 
 
-def is_homogeneous[T](tabular_data: TabularData[T]) -> bool:
+def is_homogeneous[T](tabular_data: TabularData[T], _path: Path = None) -> bool:
     first_item = tabular_data[0]
 
     return all(deep_equal_object_keys(item, first_item) for item in tabular_data)
@@ -81,7 +81,9 @@ def deep_equal_array_keys(a: list[Any], b: list[Any]) -> bool:
     return True
 
 
-def no_long_strings[T](tabular_data: TabularData[T], max_length=24) -> bool:
+def no_long_strings[T](
+    tabular_data: TabularData[T], _path: Path = None, max_length=24
+) -> bool:
     def recurse(value: Any) -> bool:
         if type(value) is dict:
             return all(recurse(item) for item in value.values())

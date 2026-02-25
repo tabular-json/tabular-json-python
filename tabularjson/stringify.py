@@ -1,7 +1,7 @@
 import json
 from math import isnan, inf
 from symtable import Function
-from typing import Any
+from typing import Any, Callable
 
 from tabularjson.objects import get_in
 from tabularjson.table_properties import always
@@ -63,6 +63,9 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
         options.get("output_as_table") if options else always
     ) or always
 
+    path_getters: list[Callable[[], Path]] = []
+    get_path = lambda: flatten(map(lambda get: get(), path_getters))
+
     def stringify_value(value: Any, indent: str, do_indent: bool) -> str:
         # number
         if type(value) is int or type(value) is float:
@@ -82,7 +85,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             return stringify_primitive_value(value)
 
         # table
-        if is_tabular(value) and output_as_table(value):
+        if is_tabular(value) and output_as_table(value, get_path()):
             return stringify_table(value, indent)
 
         # array
@@ -96,11 +99,16 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
         raise TypeError("Unknown type of data: " + str(type(value)))
 
     def stringify_array(array: list[Any], indent: str, do_indent: bool):
+        nonlocal path_getters
+
         if len(array) == 0:
             return "[]"
 
         child_indent = (indent + global_indentation) if do_indent else indent
         text = "[\n" if do_indent else "["
+
+        index: int
+        path_getters.append(lambda: [index])
 
         for index, item in enumerate(array):
             if do_indent:
@@ -115,10 +123,13 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
                 text += ","
 
         text += "\n" + indent + "]" if do_indent else "]"
+        del path_getters[-1]
 
         return text
 
     def stringify_table(array: list[Any], indent: str):
+        nonlocal path_getters
+
         is_root = array == data
         table_do_indent = global_indentation != ""
         child_indent = (
@@ -130,6 +141,10 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
 
         fields = get_fields(array)
 
+        current_path: list = []
+        index = 0
+        path_getters.append(lambda: [index] + current_path)
+
         text = "" if is_root else "(\n"
 
         def stringify_cell(item: Any, field: TableFieldGetter):
@@ -140,17 +155,15 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             return stringify_value(value, child_indent, False) if exists else ""
 
         header = list(map(lambda field: field["name"], fields))
-        rows = list(
-            map(
-                lambda item: list(
-                    map(
-                        lambda field: stringify_cell(item, field),
-                        fields,
-                    )
-                ),
-                array,
-            )
-        )
+        rows = []
+        for index, item in enumerate(array):
+            row = []
+
+            for field in fields:
+                current_path = field["path"]
+                row.append(stringify_cell(item, field))
+
+            rows.append(row)
 
         if table_do_indent:
             widths = calculate_column_widths(header, rows)
@@ -164,6 +177,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
                 text += child_indent + col_separator.join(row) + "\n"
 
         text += "" if is_root else indent + ")"
+        del path_getters[-1]
 
         return text
 
@@ -178,6 +192,8 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
         return "".join(cells)
 
     def stringify_object(obj: Record, indent: str, do_indent: bool):
+        nonlocal path_getters
+
         entries = obj.items()
 
         if len(entries) == 0:
@@ -185,6 +201,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
 
         child_indent = indent + global_indentation if do_indent else indent
         text = "{\n" if do_indent else "{"
+        path_getters.append(lambda: [key])
 
         for index, (key, value) in enumerate(entries):
             key_str = stringify_primitive_value(key)
@@ -198,6 +215,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
                 text += ","
 
         text += "\n" + indent + "}" if do_indent else "}"
+        del path_getters[-1]
 
         return text
 
@@ -211,6 +229,7 @@ def get_fields(records: list[Any]) -> list[TableFieldGetter]:
         map(
             lambda path: {
                 "name": stringify_field(path),
+                "path": path,
                 "get_value": create_get_value(path),
             },
             nested_paths,
@@ -257,3 +276,7 @@ def calculate_column_widths(header: list[str], rows: list[list[str]]) -> list[in
     # Note: we add 1 space to account for the comma,
     # and another to ensure there is at least 1 space between the columns
     return list(map(lambda width: width + 2, widths))
+
+
+def flatten(xss):
+    return [x for xs in xss for x in xs]

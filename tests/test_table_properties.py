@@ -84,10 +84,11 @@ class TablePropertiesTestCase(unittest.TestCase):
         )
 
         # with a custom max_length
+        path = []
         self.assertEqual(no_long_strings([{"comment": "hello world"}]), True)
-        self.assertEqual(no_long_strings([{"comment": "hello world"}], 4), False)
-        self.assertEqual(no_long_strings([{"comment": "1234"}], 4), True)
-        self.assertEqual(no_long_strings([{"comment": "12345"}], 4), False)
+        self.assertEqual(no_long_strings([{"comment": "hello world"}], path, 4), False)
+        self.assertEqual(no_long_strings([{"comment": "1234"}], path, 4), True)
+        self.assertEqual(no_long_strings([{"comment": "12345"}], path, 4), False)
 
     def test_always(self):
         self.assertEqual(always([]), True)

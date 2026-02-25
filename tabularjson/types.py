@@ -1,5 +1,6 @@
-from typing import Generic, TypeVar, TypedDict, NotRequired, Any, Callable
+from typing import Generic, TypeVar, TypedDict, NotRequired, Any, Callable, Optional
 
+type Path = list[str | int]
 
 T = TypeVar("T")
 
@@ -7,7 +8,7 @@ type NonEmptyList[T] = list[T]
 
 type TabularData[T] = NonEmptyList[dict[str, T]]
 
-type OutputAsTable[T] = Callable[[TabularData[T]], bool]
+type OutputAsTable[T] = Callable[[TabularData[T], Path], bool]
 
 
 class StringifyOptions(TypedDict, Generic[T]):
@@ -20,8 +21,6 @@ class Symbol(object):
     def __init__(self, name):
         self.name = name
 
-
-type Path = list[str | int]
 
 type Record = dict[str, Any | Record]
 
@@ -36,6 +35,7 @@ class TableFieldSetter(TypedDict):
 
 class TableFieldGetter(TypedDict):
     name: str
+    path: Path
     get_value: GetValue
 
 
