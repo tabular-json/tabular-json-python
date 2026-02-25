@@ -50,7 +50,7 @@ print(stringify(data, {"indentation": 2, "output_as_table": is_homogeneous}))
 #   ]
 # }
 
-print("Do not output the table with objects having a key 'animalId':")
+print("Output as table only when not containing objects having a key 'animalId':")
 options: StringifyOptions = {
     "indentation": 4,
     "output_as_table": lambda tabular_data, path: "animalId" not in tabular_data[0],
