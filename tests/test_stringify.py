@@ -61,14 +61,14 @@ class StringifyTestCase(unittest.TestCase):
                                 stringify(test["input"], options), test["output"]
                             )
 
-    def test_output_as_table(self):
-        json = {
-            "scores": [{"values": [1, 2, 3]}, {"values": [5, 6, 7]}],
-            "data": [{"measurements": [{"x": 1, "y": 3}, {"x": 2, "y": 4}]}],
-        }
+    data = {
+        "scores": [{"values": [1, 2, 3]}, {"values": [5, 6, 7]}],
+        "data": [{"measurements": [{"x": 1, "y": 3}, {"x": 2, "y": 4}]}],
+    }
 
+    def test_output_as_table(self):
         self.assertEqual(
-            stringify(json),
+            stringify(self.data),
             '{"scores":(\n'
             + '"values"\n'
             + "[1,2,3]\n"
@@ -84,7 +84,7 @@ class StringifyTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            stringify(json, {"output_as_table": no_nested_tables}),
+            stringify(self.data, {"output_as_table": no_nested_tables}),
             '{"scores":(\n'
             + '"values"\n'
             + "[1,2,3]\n"
@@ -97,12 +97,40 @@ class StringifyTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            stringify(json, {"output_as_table": no_nested_arrays}),
+            stringify(self.data, {"output_as_table": no_nested_arrays}),
             '{"scores":[{"values":[1,2,3]},{"values":[5,6,7]}],"data":[{"measurements":(\n'
             + '"x","y"\n'
             + "1,3\n"
             + "2,4\n"
             + ")}]}",
+        )
+
+    def test_output_as_table_path(self):
+        def log_paths(data):
+            paths = []
+
+            def output_as_table(_table, path):
+                nonlocal paths
+
+                paths.append(path)
+                return True
+
+            stringify(data, {"output_as_table": output_as_table})
+
+            return paths
+
+        self.assertEqual(log_paths([{"id": 1}]), [[]])
+        self.assertEqual(log_paths([[{"id": 1}]]), [[0]])
+        self.assertEqual(log_paths([[{"id": 1}], [{"id": 1}]]), [[0], [1]])
+        self.assertEqual(log_paths({"table": [{"id": 1}]}), [["table"]])
+        self.assertEqual(log_paths([{"table": [{"id": 1}]}]), [[], [0, "table"]])
+        self.assertEqual(log_paths([[{"table": [{"id": 1}]}]]), [[0], [0, 0, "table"]])
+        self.assertEqual(
+            log_paths([{"table": [{"id": 1}]}, {"table": [{"id": 1}]}]),
+            [[], [0, "table"], [1, "table"]],
+        )
+        self.assertEqual(
+            log_paths(self.data), [["scores"], ["data"], ["data", 0, "measurements"]]
         )
 
 

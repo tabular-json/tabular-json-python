@@ -199,7 +199,7 @@ def parse(text: str) -> Any:
 
         # testing rows.length > 0 is a workaround for issues with nested tables
         # due to not being able to separate table start --- from table end ---
-        if table_version1 and len(rows) > 0 and get_table_start() is "---":
+        if table_version1 and len(rows) > 0 and get_table_start() == "---":
             return "---"
 
         return None
