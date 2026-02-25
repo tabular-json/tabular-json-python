@@ -37,11 +37,11 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
         # {
         #     "id": 1,
         #     "name": "Brandon",
-        #     "friends": ---
+        #     "friends": (
         #         "id", "name"
         #         2,    "Joe"
         #         3,    "Sarah"
-        #     ---
+        #     )
         # }
 
 
@@ -130,7 +130,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
 
         fields = get_fields(array)
 
-        text = "" if is_root else "---\n"
+        text = "" if is_root else "(\n"
 
         def stringify_cell(item: Any, field: TableFieldGetter):
             value, exists = field["get_value"](item)
@@ -163,7 +163,7 @@ def stringify(data: Any, options: StringifyOptions | None = None) -> str:
             for row in rows:
                 text += child_indent + col_separator.join(row) + "\n"
 
-        text += "" if is_root else indent + "---"
+        text += "" if is_root else indent + ")"
 
         return text
 

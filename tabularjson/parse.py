@@ -12,14 +12,14 @@ def parse(text: str) -> Any:
     Example:
 
         text = \"\"\"{
-                "id": 1,
-                "name": "Brandon",
-                "friends": ---
-                "id", "name"
-                    2,    "Joe"
-                    3,    "Sarah"
-                          ---
-            }
+            "id": 1,
+            "name": "Brandon",
+            "friends": (
+            "id", "name"
+                2,    "Joe"
+                3,    "Sarah"
+            )
+        }
         \"\"\"
 
         data = parse(text)
@@ -39,6 +39,8 @@ def parse(text: str) -> Any:
     """
 
     i = 0
+    table_version1 = False
+    table_version2 = False
 
     def parse_object() -> ParseResult:
         nonlocal i
@@ -143,10 +145,11 @@ def parse(text: str) -> Any:
     def parse_table() -> ParseResult:
         nonlocal i
 
-        if not is_table_start():
+        table_start = get_table_start()
+        if table_start is None:
             return False, None
 
-        i += 3
+        i += len(table_start)
         skip_table_whitespace()
         eat_table_row_separator()
 
@@ -154,22 +157,52 @@ def parse(text: str) -> Any:
         eat_table_row_separator()
 
         rows: list[Record] = []
-        while i < len(text) and not is_table_end(rows):
+        while i < len(text) and get_table_end(rows) is None:
             rows.append(parse_table_row(fields))
             eat_table_row_separator()
 
-        if not is_table_end(rows):
+        table_end = get_table_end(rows)
+        if table_end is None:
             raise_table_row_or_end_expected()
-        i += 3
+        i += len(table_end)
 
         return True, rows
 
-    def is_table_start():
-        return text_at(i) == "-" and text_at(i + 1) == "-" and text_at(i + 2) == "-"
+    def get_table_start():
+        nonlocal table_version1, table_version2
 
-    def is_table_end(rows):
-        # TODO: testing len(rows) > 0 is a workaround for some issues with nested tables, but it is no solid solution
-        return len(rows) > 0 and is_table_start()
+        if text_at(i) == "(":
+            table_version2 = True
+
+            if table_version1:
+                raise SyntaxError(
+                    "Cannot mix table syntax (...) with deprecated table syntax ---"
+                )
+
+            return "("
+
+        if text_at(i) == "-" and text_at(i + 1) == "-" and text_at(i + 2) == "-":
+            table_version1 = True
+
+            if table_version2:
+                raise SyntaxError(
+                    "Cannot mix table syntax (...) with deprecated table syntax ---"
+                )
+
+            return "---"
+
+        return None
+
+    def get_table_end(rows):
+        if table_version2 and text_at(i) == ")":
+            return ")"
+
+        # testing rows.length > 0 is a workaround for issues with nested tables
+        # due to not being able to separate table start --- from table end ---
+        if table_version1 and len(rows) > 0 and get_table_start() is "---":
+            return "---"
+
+        return None
 
     def parse_table_fields() -> list[TableFieldSetter]:
         nonlocal i
@@ -467,7 +500,7 @@ def parse(text: str) -> Any:
     def eat_table_row_separator():
         # must start with a newline
         if text_at(i) != "\n":
-            raise SyntaxError(f"Newline '\n' expected after table row {got_at()}")
+            raise SyntaxError(f"Newline '\\n' expected after table row {got_at()}")
 
         # can optionally be followed by more newlines and whitespace and comments
         skip_whitespace()
@@ -505,7 +538,7 @@ def parse(text: str) -> Any:
         raise SyntaxError(f"Array item or end of array ']' expected {got_at()}")
 
     def raise_table_row_or_end_expected():
-        raise SyntaxError(f"Table row or end of table '---' expected {got_at()}")
+        raise SyntaxError(f"Table row or end of table ')' expected {got_at()}")
 
     def raise_array_item_expected():
         raise SyntaxError(f"Array item expected {got_at()}")
